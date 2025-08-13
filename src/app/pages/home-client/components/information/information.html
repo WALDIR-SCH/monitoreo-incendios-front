@@ -1,0 +1,294 @@
+<div class="bg-white rounded-lg shadow-lg p-6 max-w-6xl mx-auto pt-30">
+  <!-- Header de la sección -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Incendios Recientes</h2>
+        <p class="text-gray-600">Reportes del último mes</p>
+      </div>
+    </div>
+
+    <button (click)="reintentar()" [disabled]="cargando"
+      class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+      <p class="text-gray-600">Cargando incendios recientes...</p>
+    </div>
+  </div>
+
+  <!-- Estado de error -->
+  <div *ngIf="error && !cargando" class="text-center py-12">
+    <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Error al cargar datos</h3>
+    <p class="text-gray-600 mb-4">{{ error }}</p>
+    <button (click)="reintentar()"
+      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+      Intentar nuevamente
+    </button>
+  </div>
+
+  <!-- Lista de incendios recientes -->
+  <div *ngIf="!cargando && !error && incendiosRecientes.length > 0" class="space-y-4">
+    <div *ngFor="let incendio of incendiosRecientes; trackBy: trackByIncendio"
+      class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+
+      <!-- Header del incendio -->
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">{{ obtenerIconoEstado(incendio.estado) }}</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-semibold text-gray-900">{{ incendio.nombreCiudad }}</h3>
+              <span
+                [class]="'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ' + obtenerClaseEstado(incendio.estado)">
+                {{ obtenerTextoEstado(incendio.estado) }}
+              </span>
+              <span *ngIf="incendio.nivelUrgencia"
+                [class]="'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ' + obtenerClaseUrgencia(incendio.nivelUrgencia)">
+                {{ incendio.nivelUrgencia }}
+              </span>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {{ incendio.pais }}{{ incendio.region ? ', ' + incendio.region : '' }}
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ obtenerTiempoTranscurrido(incendio.fechaReporte) }}
+              </span>
+              <span *ngIf="incendio.fuenteIncendio" class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ incendio.fuenteIncendio }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-lg font-semibold text-orange-600">
+            {{ formatearArea(incendio.areaAfectada) }}
+          </div>
+          <div class="text-xs text-gray-500">área afectada</div>
+          <div *ngIf="incendio.poblacion" class="text-xs text-gray-500 mt-1">
+            {{ incendio.poblacion }} habitantes
+          </div>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <p class="text-gray-700 text-sm mb-3 line-clamp-2">{{ incendio.descripcion }}</p>
+
+      <!-- Galería de archivos multimedia -->
+      <div *ngIf="incendio.archivosSubidos && incendio.archivosSubidos.length > 0" class="mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="text-sm text-gray-600">
+            {{ incendio.archivosSubidos.length }} archivo{{ incendio.archivosSubidos.length > 1 ? 's' : '' }} multimedia
+          </span>
+        </div>
+
+        <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          <div *ngFor="let archivo of incendio.archivosSubidos.slice(0, 8); let i = index"
+            class="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-75 transition-opacity group"
+            (click)="abrirModal(archivo)">
+
+            <!-- Vista previa de imagen -->
+            <div *ngIf="esImagen(archivo)" class="w-full h-full">
+              <img [src]="archivo.urlArchivo" [alt]="archivo.nombreArchivo"
+                class="w-full h-full object-cover">
+              <div class="absolute inset-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Vista previa de video -->
+            <div *ngIf="esVideo(archivo)" class="w-full h-full bg-gray-900 flex items-center justify-center">
+              <div class="text-center">
+                <svg class="w-8 h-8 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <div *ngIf="archivo.tamanhoArchivo" class="text-xs text-white opacity-75">{{ formatearTamano(archivo.tamanhoArchivo) }}</div>
+              </div>
+              <div class="absolute inset-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Indicador de más archivos -->
+            <div *ngIf="i === 7 && incendio.archivosSubidos && incendio.archivosSubidos.length > 8"
+              class="absolute inset-0 flex items-center justify-center">
+              <span class="text-white font-medium">+{{ incendio.archivosSubidos.length - 8 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4 text-xs text-gray-500">
+          <span class="flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+            </svg>
+            {{ incendio.tipoVegetacion }}
+          </span>
+
+          <span *ngIf="incendio.comentarios && incendio.comentarios.length" class="flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {{ incendio.comentarios.length }} comentario{{ incendio.comentarios.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <!-- Coordenadas -->
+        <div class="text-xs text-gray-400">
+          {{ incendio.latitud.toFixed(4) }}, {{ incendio.longitud.toFixed(4) }}
+        </div>
+      </div>
+
+      <!-- Último comentario si existe -->
+      <div *ngIf="incendio.comentarios && incendio.comentarios.length > 0" class="mt-3 pt-3 border-t border-gray-100">
+        <div class="bg-blue-50 rounded-lg p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span class="text-sm font-medium text-blue-900">
+              {{ incendio.comentarios[0].nombreUsuario }}
+            </span>
+            <span class="text-xs text-blue-600">
+              {{ obtenerTiempoTranscurrido(incendio.comentarios[0].fechaComentario) }}
+            </span>
+          </div>
+          <p class="text-sm text-blue-800">{{ incendio.comentarios[0].comentario }}</p>
+          <div *ngIf="incendio.comentarios[0].accionTomada"
+            class="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1 inline-block">
+            <strong>Acción:</strong> {{ incendio.comentarios[0].accionTomada }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!cargando && !error && incendiosRecientes.length === 0" class="text-center py-12">
+    <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">¡Excelentes noticias!</h3>
+    <p class="text-gray-600">No hay incendios reportados en las últimas 48 horas.</p>
+  </div>
+</div>
+
+<!-- Modal para previsualización de archivos -->
+<div *ngIf="modalAbierto" class="fixed inset-0 z-50 overflow-y-auto" (click)="cerrarModal()">
+  <div class="min-h-screen px-4 text-center">
+    <div class="fixed inset-0 transition-opacity"></div>
+
+    <!-- Botón cerrar -->
+    <button type="button"
+      class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+      (click)="cerrarModal()">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="inline-block w-full max-w-4xl my-8 text-left align-middle transition-all transform">
+      <div class="bg-white rounded-lg shadow-xl overflow-hidden" (click)="$event.stopPropagation()">
+
+        <!-- Header del modal -->
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">
+            {{ archivoSeleccionado?.nombreArchivo }}
+          </h3>
+          <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+            <span>Tipo: {{ archivoSeleccionado?.tipoArchivo }}</span>
+            <span *ngIf="archivoSeleccionado?.tamanhoArchivo">
+              Tamaño: {{ formatearTamano(archivoSeleccionado?.tamanhoArchivo) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="p-6 max-h-96 overflow-auto">
+          <!-- Vista previa de imagen -->
+          <div *ngIf="archivoSeleccionado && esImagen(archivoSeleccionado)" class="text-center">
+            <img [src]="archivoSeleccionado.urlArchivo"
+              [alt]="archivoSeleccionado.nombreArchivo"
+              class="max-w-full max-h-80 mx-auto rounded-lg shadow-lg">
+          </div>
+
+          <!-- Vista previa de video -->
+          <div *ngIf="archivoSeleccionado && esVideo(archivoSeleccionado)" class="text-center">
+            <video [src]="archivoSeleccionado.urlArchivo"
+              controls
+              class="max-w-full max-h-80 mx-auto rounded-lg shadow-lg">
+              Tu navegador no soporta la reproducción de video.
+            </video>
+          </div>
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+          <button type="button"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            (click)="cerrarModal()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

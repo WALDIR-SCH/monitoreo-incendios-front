@@ -1,0 +1,354 @@
+<header (click)="onClickOutside($event)" class="mb-20">
+  <nav class="flex items-center justify-between p-5 md:px-16 z-10 fade-in backdrop-blur-xs shadow-md bg-white fixed top-0 left-0 w-full "
+    aria-label="Global">
+    <div class="flex md:flex-1">
+      <a routerLink="/" class="relative -m-1.5 p-1.5 flex gap-2">
+        <img class="size-11" src="/assets/img/logo-fire.png" alt="logo">
+        <h1 class="font-black text-2xl xl:text-3xl flex my-1">
+          ApuNina
+        </h1>
+      </a>
+    </div>
+    <div class="hidden md:flex md:gap-x-12 md:items-center ">
+      <a href="/" class="flex items-center gap-2 p-1 text-sm font-semibold text-gray-600 hover:rounded-md">
+        <svg class="size-6 hidden xl:block" viewBox="0 0 24 24" aria-hidden="true">
+          <use xlink:href="/assets/sprite.svg#home" />
+        </svg>Inicio</a>
+
+      <a routerLink="/reportar"
+        class="flex items-center gap-2 p-1 text-sm font-semibold text-gray-600 hover:rounded-md">
+        <svg class="size-6 hidden xl:block" width="24" height="24" viewBox="0 0 1024 1024">
+          <use xlink:href="/assets/sprite.svg#fire" />
+        </svg>Reportar</a>
+
+      <a href="#prevencion" class="flex items-center gap-2 p-1 text-sm font-semibold text-gray-600 hover:rounded-md">
+        <svg class="size-6 hidden xl:block" width="24" height="24" viewBox="0 0 32 32">
+          <use xlink:href="/assets/sprite.svg#security" />
+        </svg>
+        Prevención
+      </a>
+    </div>
+
+    <div class="flex flex-1 justify-end mr-3 sm:mr-0">
+      <ng-container *ngIf="isLoggedIn; else guestButtons">
+        <div class="flex items-center gap-4 relative">
+          <!-- Botón de Notificaciones -->
+          <div class="relative">
+            <button (click)="togglePanelNotificaciones()"
+                    class="notification-button relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded-full transition-colors">
+              <span class="sr-only">Ver notificaciones</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <!-- Badge de notificaciones -->
+              <span *ngIf="notificacionesNoLeidas > 0"
+                    class="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full animate-pulse">
+                {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+              </span>
+            </button>
+
+            <!-- Panel desplegable de notificaciones -->
+            <div *ngIf="mostrarPanelNotificaciones"
+                 class="notification-panel absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-300 z-50 max-h-[32rem] overflow-hidden">
+              <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-medium text-gray-900">Notificaciones</h3>
+                  <button *ngIf="notificacionesNoLeidas > 0"
+                          (click)="marcarTodasNotificacionesComoLeidas()"
+                          class="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                    Marcar todas como leídas
+                  </button>
+                </div>
+              </div>
+
+              <div class="max-h-64 overflow-y-auto">
+                <!-- Loading spinner -->
+                <div *ngIf="cargandoNotificaciones" class="flex items-center justify-center py-8">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                  <span class="ml-2 text-sm text-gray-500">Cargando...</span>
+                </div>
+
+                <!-- Lista de notificaciones -->
+                <div *ngIf="!cargandoNotificaciones && notificaciones.length > 0" class="divide-y divide-gray-200 max-h-96 overflow-y-auto overflow-x-hidden">
+                  <div *ngFor="let notificacion of notificaciones.slice(0, 5); trackBy: trackByNotificacion"
+                       (click)="marcarNotificacionComoLeida(notificacion)"
+                       class="p-4 hover:bg-gray-50 cursor-pointer transition-colors "
+                       [ngClass]="{ 'bg-blue-50': !notificacion.leida, 'opacity-75': notificacion.leida }" routerLink="/mis-notificaciones" (click)="mostrarPanelNotificaciones = false">
+
+                    <div class="flex items-start space-x-3">
+                      <!-- Icono -->
+                      <div [class]="'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ' + obtenerClaseNotificacion(notificacion.tipoNotificacion)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <!-- Icono dinámico según el tipo -->
+                          <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'fire'"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                          <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'refresh'"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                          <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'warning'"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                          <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'info'"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'bell'"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                      </div>
+
+                      <!-- Contenido -->
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900">{{ notificacion.titulo }}</p>
+                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ notificacion.mensaje }}</p>
+                        <div class="flex items-center justify-between mt-2">
+                          <p class="text-xs text-gray-400">{{ notificacion.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+                          <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                            {{ getTipoNotificacionLabel(notificacion.tipoNotificacion) }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Indicador de no leída -->
+                      <div *ngIf="!notificacion.leida" class="flex-shrink-0">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sin notificaciones -->
+                <div *ngIf="!cargandoNotificaciones && notificaciones.length === 0"
+                     class="p-6 text-center text-gray-500">
+                  <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                  </svg>
+                  <p class="text-sm">No tienes notificaciones</p>
+                </div>
+              </div>
+
+              <!-- Footer del panel -->
+              <div class="p-3 border-t border-gray-200 bg-gray-50">
+                <div *ngIf="notificaciones.length > 5; else showViewAllButton" class="text-center">
+                  <p class="text-sm text-gray-600 mb-2">
+                    Mostrando las 5 notificaciones más recientes
+                  </p>
+                  <a routerLink="/mis-notificaciones" (click)="mostrarPanelNotificaciones = false"
+                     class="inline-flex items-center text-sm text-orange-600 hover:text-orange-700 font-medium">
+                    Ver todas las notificaciones
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+                <ng-template #showViewAllButton>
+                  <div *ngIf="notificaciones.length > 0" class="text-center">
+                    <a routerLink="/mis-notificaciones" (click)="mostrarPanelNotificaciones = false"
+                       class="inline-flex items-center text-sm text-orange-600 hover:text-orange-700 font-medium">
+                      Ver todas las notificaciones
+                      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </a>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Perfil de usuario -->
+          <div class="inline-block group cursor-pointer" (click)="togglePopover()">
+            <div class="flex items-center gap-2">
+              <img *ngIf="userInfo?.foto" [src]="userInfo.foto" alt="Foto de perfil"
+                class="w-11 h-11 rounded-full object-cover border primary-border" />
+              <span class="text-gray-600 hidden sm:block">{{ userInfo?.nombre }}</span>
+            </div>
+            <div
+              class="absolute bottom-0 -right-1.5 w-5 h-5 flex items-center justify-center bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-gray-300"
+              [ngClass]="{
+                'opacity-100': showPopover,
+                'opacity-0': !showPopover
+              }">
+              <svg class="size-5 text-gray-600" viewBox="0 0 20 20" aria-hidden="true">
+                <use xlink:href="/assets/sprite.svg#arrowbottom" />
+              </svg>
+            </div>
+          </div>
+          <!-- Menú desplegable -->
+          <div *ngIf="showPopover" #popoverMenu
+            class="absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 pt-2 pb-3">
+            <div class="px-4 py-3 flex gap-3">
+              <div class="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                <img [src]="userInfo?.foto" alt="Foto de perfil" class="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div class="text-gray-900 font-medium mb-1">
+                  {{ userInfo?.nombre }}
+                </div>
+                <div class="text-sm text-gray-500 line-clamp-1 w-52 xl:w-50">
+                  {{ userInfo?.email }}
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                <a [routerLink]="['/historial']"
+                  class="flex items-center gap-3 px-6 py-2 hover:bg-gray-100 text-gray-600 text-sm">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <use xlink:href="/assets/sprite.svg#user" />
+                  </svg>
+                  Historial de reportes
+                </a>
+              </li>
+
+              <li>
+                <a [routerLink]="['/mis-notificaciones']"
+                  class="flex items-center gap-3 px-6 py-2 hover:bg-gray-100 text-gray-600 text-sm relative">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                  </svg>
+                  Mis notificaciones
+                  <span *ngIf="notificacionesNoLeidas > 0"
+                        class="absolute right-4 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+                  </span>
+                </a>
+              </li>
+
+              <li *ngIf="userInfo?.nombreRol === 'ADMINISTRADOR'">
+                <a [routerLink]="['/dashboard']"
+                  class="flex items-center gap-3 px-6 py-2 hover:bg-gray-100 text-gray-600 text-sm">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <use xlink:href="/assets/sprite.svg#dashboard" />
+                  </svg>
+                  Panel administrativo
+                </a>
+              </li>
+
+              <li>
+                <a class="flex items-center gap-3 px-6 py-2 hover:bg-gray-100 text-red-600 text-sm border-t border-gray-200"
+                  (click)="logOut()">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <use xlink:href="/assets/sprite.svg#goout" />
+                  </svg>
+                  Cerrar sesión
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #guestButtons>
+        <div>
+          <button class="px-1 text-sm sm:text-lg sm:px-2 sm:py-1 rounded mr-0 md:mr-2 hover:text-gray-400 text-gray-700"
+            routerLink="/login">
+            Iniciar sesión
+          </button>
+          <button
+            class="text-sm sm:text-lg moving-border sm:px-2 sm:py-2 md:px-6 md:py-2 rounded-sm registro-anim text-white primary-gradient"
+            routerLink="/register">
+            Registrarse
+          </button>
+        </div>
+      </ng-template>
+    </div>
+    <!-- Botón Hamburguesa -->
+    <div class="flex md:hidden justify-end">
+      <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
+        (click)="toggleMenu()">
+        <span class="sr-only">Abrir menú</span>
+        <svg *ngIf="!menuAbierto" class="size-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+
+        <svg *ngIf="menuAbierto" class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- Moviles -->
+<div *ngIf="menuAbierto" class="md:hidden fixed inset-0 z-50 bg-black/50" (click)="toggleMenu()"></div>
+
+<div *ngIf="menuAbierto"
+  class="md:hidden fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white px-6 py-6 overflow-y-auto" #menuMovil>
+  <div class="flex items-center justify-between">
+    <a href="/" class="-m-1.5 p-1.5 flex">
+        <img class="size-11" src="/assets/img/logo-fire.png" alt="logo">
+      <h1 class="font-fifties text-[1.70rem] font-black italic my-1 text-primary-green">
+   ApuNina
+      </h1>
+    </a>
+    <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" (click)="toggleMenu()">
+      <span class="sr-only">Cerrar menú</span>
+      <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="mt-6 flow-root">
+    <div class="-my-6 divide-y divide-gray-500/10">
+      <div class="space-y-2 py-6">
+        <ng-container *ngIf="!isLoggedIn">
+          <div class="flex flex-col items-center justify-center space-y-2">
+            <button class="px-4 py-2 rounded hover:text-blue-600 w-full" routerLink="/login">
+              Iniciar sesión
+            </button>
+            <button class="text-gray-600 primary-gradient px-4 py-2 rounded w-full hover:bg-gray-300 font-semibold"
+              routerLink="/register">
+              Registrarse
+            </button>
+          </div>
+        </ng-container>
+        <a href="/" class="flex gap-2 -mx-3 rounded-lg px-3 py-2 font-semibold text-gray-900 hover:bg-gray-50">
+          <svg class="size-5" viewBox="0 0 24 24" aria-hidden="true">
+            <use xlink:href="/assets/sprite.svg#home" />
+          </svg> Inicio</a>
+
+        <a routerLink="/reportar"
+          class="flex gap-2 -mx-3 rounded-lg px-3 py-2 font-semibold text-gray-900 hover:bg-gray-50">
+          <svg class="size-5" viewBox="0 0 1024 1024" aria-hidden="true">
+            <use xlink:href="/assets/sprite.svg#fire" />
+          </svg> Reportar</a>
+
+        <a *ngIf="isLoggedIn" routerLink="/mis-notificaciones"
+          class="flex gap-2 -mx-3 rounded-lg px-3 py-2 font-semibold text-gray-900 hover:bg-gray-50 relative">
+          <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          Mis notificaciones
+          <span *ngIf="notificacionesNoLeidas > 0"
+                class="absolute right-3 top-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+            {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+          </span>
+        </a>
+
+        <a href="/" class="flex gap-2 -mx-3 rounded-lg px-3 py-2 font-semibold text-gray-900 hover:bg-gray-50">
+          <svg class="size-5" viewBox="0 0 32 32" aria-hidden="true">
+            <use xlink:href="/assets/sprite.svg#security" />
+          </svg> Prevención</a>
+      </div>
+
+      <div class="py-6">
+        <ng-container *ngIf="isLoggedIn">
+          <div class="flex items-center gap-4">
+            <img *ngIf="userInfo?.foto" [src]="userInfo.foto" alt="Foto de perfil"
+              class="w-10 h-10 rounded-full object-cover" />
+            <span class="font-medium">{{ userInfo?.nombre }}</span>
+          </div>
+        </ng-container>
+
+      </div>
+
+    </div>
+  </div>
+</div>

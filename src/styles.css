@@ -1,0 +1,52 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@theme {
+  --color-primary-blue: #185CFF;
+  --color-primary-border: #333333;
+  --color-primary-ambient:#55B76B;
+  --color-selected: #0546ff;
+  --color-gray-dark: #E2E8F0;
+  --color-hover-secondary-blue: #1555b6;
+  --color-black-50: rgba(0, 0, 0, 0.5);
+  --color-black-40: rgba(0, 0, 0, 0.4);
+  --color-black-10: rgba(0, 0, 0, 0.1);
+  --color-hover-secondary-blue: #1555b6;
+  --color-placeholder: #8a8db3;
+  --color-gray-200: #edf2f7;
+  --color-subtitle: #1e2939;
+  --font-system: 'system-ui';
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: white;
+  background-image: url("assets/img/bg.avif");
+}
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+button {
+  cursor: pointer;
+}
+.primary-gradient {
+  background: linear-gradient(123deg,
+      #FFFFFF 0%,
+      #185CFF 35%);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 1.5s ease-in-out forwards;
+}
+
+input::placeholder,textarea::placeholder{
+  color: var(--color-placeholder);
+}

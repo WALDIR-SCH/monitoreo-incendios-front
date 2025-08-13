@@ -1,0 +1,271 @@
+/* Estilos para el componente de notificaciones de usuario */
+
+/* Animaciones personalizadas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Estilos para las notificaciones */
+.notification-item {
+  animation: fadeIn 0.3s ease-out;
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-unread {
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Estilos para los iconos de notificación */
+.notification-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.notification-item:hover .notification-icon {
+  transform: scale(1.1);
+}
+
+/* Estilos para badges */
+.badge-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Estilos para las estadísticas */
+.stats-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los filtros */
+.filter-section {
+  background: linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Estilos para botones con efectos */
+.btn-primary {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-secondary {
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para la paginación */
+.pagination-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn.active {
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+}
+
+/* Estilos para el loading spinner */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Estilos para mensajes de estado */
+.empty-state {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.error-alert {
+  animation: slideIn 0.3s ease-out;
+  border-left: 4px solid #dc2626;
+}
+
+/* Estilos responsive */
+@media (max-width: 640px) {
+  .notification-item {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .filter-section {
+    padding: 1rem;
+  }
+
+  .notification-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Estilos para mejor legibilidad */
+.notification-title {
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notification-message {
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* Estilos para mejorar accesibilidad */
+.notification-item:focus {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+}
+
+.btn-primary:focus,
+.btn-secondary:focus {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+}
+
+/* Estilos para indicadores visuales */
+.unread-indicator {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Estilos para transiciones suaves */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Estilos para mejorar la jerarquía visual */
+.section-header {
+  position: relative;
+}
+
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 3rem;
+  height: 2px;
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  border-radius: 1px;
+}
+
+/* Estilos para mejorar la experiencia de usuario */
+.notification-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.notification-item:hover .notification-actions {
+  opacity: 1;
+}
+
+/* Estilos para dark mode (preparación futura) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode .bg-white {
+    background-color: #1f2937;
+  }
+
+  .dark-mode .text-gray-900 {
+    color: #f9fafb;
+  }
+
+  .dark-mode .text-gray-700 {
+    color: #d1d5db;
+  }
+
+  .dark-mode .text-gray-500 {
+    color: #9ca3af;
+  }
+
+  .dark-mode .border-gray-200 {
+    border-color: #374151;
+  }
+}
+
+/* Estilos adicionales para mejorar la UX */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para animaciones de entrada */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-animation {
+  animation-delay: calc(var(--index, 0) * 0.1s);
+}

@@ -1,0 +1,418 @@
+<app-header-client></app-header-client>
+<div class="historial-container">
+  <!-- Header -->
+  <div class="historial-header">
+    <h1>Mis Reportes de Incendios</h1>
+    <p class="subtitle">Gestiona y visualiza todos tus reportes de incendios forestales</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    <i class="icon-error"></i>
+    <span>{{ error }}</span>
+    <button type="button" class="btn-close" (click)="error = ''">×</button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="cargando" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Vista Lista -->
+  <div *ngIf="modoVista === 'lista' && !cargando" class="lista-view">
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+      <h3>Filtros de búsqueda</h3>
+      <form [formGroup]="filtroForm" class="filtros-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="estado">Estado</label>
+            <select formControlName="estado" id="estado" class="form-control">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let estado of estadosDisponibles" [value]="estado">
+                {{ estado.replace('_', ' ') }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="nivelUrgencia">Nivel de Urgencia</label>
+            <select formControlName="nivelUrgencia" id="nivelUrgencia" class="form-control">
+              <option value="">Todos los niveles</option>
+              <option *ngFor="let nivel of nivelesUrgencia" [value]="nivel">
+                {{ nivel }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fechaInicio">Fecha Inicio</label>
+            <input type="date" formControlName="fechaInicio" id="fechaInicio" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="fechaFin">Fecha Fin</label>
+            <input type="date" formControlName="fechaFin" id="fechaFin" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombreCiudad">Ciudad</label>
+            <input type="text" formControlName="nombreCiudad" id="nombreCiudad"
+                   class="form-control" placeholder="Nombre de la ciudad">
+          </div>
+
+          <div class="form-group">
+            <label for="areaMinima">Área Mínima (hectáreas)</label>
+            <input type="number" formControlName="areaMinima" id="areaMinima"
+                   class="form-control" placeholder="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <label for="areaMaxima">Área Máxima (hectáreas)</label>
+            <input type="number" formControlName="areaMaxima" id="areaMaxima"
+                   class="form-control" placeholder="1000" min="0">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" (click)="aplicarFiltros()">
+            <i class="icon-search"></i> Aplicar Filtros
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="limpiarFiltros()">
+            <i class="icon-refresh"></i> Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Resumen de resultados -->
+    <div class="resultados-resumen">
+      <p>Mostrando {{ incendiosUsuario.length }} de {{ totalElementos }} reportes</p>
+    </div>
+
+    <!-- Lista de incendios -->
+    <div *ngIf="incendiosUsuario.length > 0" class="incendios-grid">
+      <div *ngFor="let incendio of incendiosUsuario" class="incendio-card">
+        <div class="card-header">
+          <div class="location">
+            <i class="icon-location"></i>
+            <span>{{ incendio.nombreCiudad }}, {{ incendio.pais }}</span>
+          </div>
+          <div class="badges">
+            <span class="badge" [ngClass]="obtenerClaseEstado(incendio.estado)">
+              {{ incendio.estado.replace('_', ' ') }}
+            </span>
+            <span class="badge" [ngClass]="obtenerClaseUrgencia(incendio.nivelUrgencia)">
+              {{ incendio.nivelUrgencia }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">Tipo de Vegetación:</span>
+            <span>{{ incendio.tipoVegetacion }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Área Afectada:</span>
+            <span>{{ incendio.areaAfectada }} hectáreas</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Fecha de Reporte:</span>
+            <span>{{ formatearFecha(incendio.fechaReporte) }}</span>
+          </div>
+          <div class="description">
+            <p>{{ incendio.descripcion | slice:0:100 }}{{ incendio.descripcion.length > 100 ? '...' : '' }}</p>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn btn-info btn-sm" (click)="verDetalle(incendio)">
+            <i class="icon-eye"></i> Ver Detalle
+          </button>
+          <button *ngIf="puedeEditar(incendio)"
+                  class="btn btn-warning btn-sm"
+                  (click)="iniciarEdicion(incendio)">
+            <i class="icon-edit"></i> Editar
+          </button>
+          <button *ngIf="puedeEliminar(incendio)"
+                  class="btn btn-danger btn-sm"
+                  (click)="confirmarEliminacion(incendio)">
+            <i class="icon-delete"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin resultados -->
+    <div *ngIf="incendiosUsuario.length === 0" class="no-resultados">
+      <i class="icon-empty"></i>
+      <h3>No se encontraron reportes</h3>
+      <p>No has realizado reportes de incendios o no hay resultados que coincidan con los filtros aplicados.</p>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="totalPaginas > 1" class="paginacion">
+      <button class="btn btn-secondary"
+              [disabled]="paginaActual === 0"
+              (click)="paginaAnterior()">
+        <i class="icon-arrow-left"></i> Anterior
+      </button>
+
+      <span class="pagina-info">
+        Página {{ paginaActual + 1 }} de {{ totalPaginas }}
+      </span>
+
+      <button class="btn btn-secondary"
+              [disabled]="paginaActual >= totalPaginas - 1"
+              (click)="paginaSiguiente()">
+        Siguiente <i class="icon-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista Detalle -->
+  <div *ngIf="modoVista === 'detalle' && incendioSeleccionado" class="detalle-view">
+    <div class="detalle-header">
+      <button class="btn btn-secondary" (click)="volverALista()">
+        <i class="icon-arrow-left"></i> Volver a la lista
+      </button>
+      <h2>Detalle del Reporte</h2>
+    </div>
+
+    <div class="detalle-content">
+      <div class="detalle-info">
+        <div class="info-section">
+          <h3>Información General</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Estado:</label>
+              <span class="badge" [ngClass]="obtenerClaseEstado(incendioSeleccionado.estado)">
+                {{ incendioSeleccionado.estado.replace('_', ' ') }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Urgencia:</label>
+              <span class="badge" [ngClass]="obtenerClaseUrgencia(incendioSeleccionado.nivelUrgencia)">
+                {{ incendioSeleccionado.nivelUrgencia }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Tipo de Vegetación:</label>
+              <span>{{ incendioSeleccionado.tipoVegetacion }}</span>
+            </div>
+            <div class="info-item">
+              <label>Fuente del Incendio:</label>
+              <span>{{ incendioSeleccionado.fuenteIncendio }}</span>
+            </div>
+            <div class="info-item">
+              <label>Área Afectada:</label>
+              <span>{{ incendioSeleccionado.areaAfectada }} hectáreas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Ubicación</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Ciudad:</label>
+              <span>{{ incendioSeleccionado.nombreCiudad }}</span>
+            </div>
+            <div class="info-item">
+              <label>País:</label>
+              <span>{{ incendioSeleccionado.pais }}</span>
+            </div>
+            <div class="info-item" *ngIf="incendioSeleccionado.region">
+              <label>Región:</label>
+              <span>{{ incendioSeleccionado.region }}</span>
+            </div>
+            <div class="info-item">
+              <label>Coordenadas:</label>
+              <span>{{ incendioSeleccionado.latitud }}, {{ incendioSeleccionado.longitud }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Descripción</h3>
+          <p class="descripcion">{{ incendioSeleccionado.descripcion }}</p>
+        </div>
+
+        <div class="info-section">
+          <h3>Fechas</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Fecha de Reporte:</label>
+              <span>{{ formatearFecha(incendioSeleccionado.fechaReporte) }}</span>
+            </div>
+            <div class="info-item" *ngIf="incendioSeleccionado.fechaActualizacion">
+              <label>Última Actualización:</label>
+              <span>{{ formatearFecha(incendioSeleccionado.fechaActualizacion) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Archivos -->
+        <div class="info-section" *ngIf="incendioSeleccionado.archivosSubidos && incendioSeleccionado.archivosSubidos.length > 0">
+          <h3>Archivos Adjuntos</h3>
+          <div class="archivos-grid">
+            <div *ngFor="let archivo of incendioSeleccionado.archivosSubidos" class="archivo-item">
+              <div class="archivo-info">
+                <i class="icon-file" [ngClass]="archivo.tipoArchivo === 'IMAGEN' ? 'icon-image' : 'icon-video'"></i>
+                <div class="archivo-details">
+                  <span class="nombre">{{ archivo.nombreArchivo }}</span>
+                  <span class="tipo">{{ archivo.tipoArchivo }}</span>
+                </div>
+              </div>
+              <div class="archivo-actions">
+                <a [href]="archivo.urlArchivo" target="_blank" class="btn btn-sm btn-info">
+                  <i class="icon-download"></i> Ver
+                </a>
+                <button *ngIf="puedeEditar(incendioSeleccionado)"
+                        class="btn btn-sm btn-danger"
+                        (click)="eliminarArchivo(archivo.idArchivo)">
+                  <i class="icon-delete"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comentarios -->
+        <div class="info-section" *ngIf="incendioSeleccionado.comentarios && incendioSeleccionado.comentarios.length > 0">
+          <h3>Comentarios y Acciones</h3>
+          <div class="comentarios-list">
+            <div *ngFor="let comentario of incendioSeleccionado.comentarios" class="comentario-item">
+              <div class="comentario-header">
+                <strong>{{ comentario.nombreUsuario }}</strong>
+                <span class="fecha">{{ formatearFecha(comentario.fechaComentario) }}</span>
+              </div>
+              <p class="comentario-texto">{{ comentario.comentario }}</p>
+              <div *ngIf="comentario.accionTomada" class="accion-tomada">
+                <strong>Acción tomada:</strong> {{ comentario.accionTomada }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detalle-actions">
+        <button *ngIf="puedeEditar(incendioSeleccionado)"
+                class="btn btn-warning"
+                (click)="iniciarEdicion(incendioSeleccionado)">
+          <i class="icon-edit"></i> Editar Reporte
+        </button>
+        <button *ngIf="puedeEliminar(incendioSeleccionado)"
+                class="btn btn-danger"
+                (click)="confirmarEliminacion(incendioSeleccionado)">
+          <i class="icon-delete"></i> Eliminar Reporte
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Editar -->
+  <div *ngIf="modoVista === 'editar' && editandoIncendio" class="editar-view">
+    <div class="editar-header">
+      <button class="btn btn-secondary" (click)="cancelarEdicion()">
+        <i class="icon-arrow-left"></i> Cancelar
+      </button>
+      <h2>Editar Reporte</h2>
+    </div>
+
+    <form [formGroup]="editForm" class="editar-form" (ngSubmit)="guardarEdicion()">
+      <div class="form-section">
+        <h3>Información del Incendio</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tipoVegetacion">Tipo de Vegetación *</label>
+            <select formControlName="tipoVegetacion" id="tipoVegetacion" class="form-control" required>
+              <option value="">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposVegetacion" [value]="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fuenteIncendio">Fuente del Incendio *</label>
+            <select formControlName="fuenteIncendio" id="fuenteIncendio" class="form-control" required>
+              <option value="">Seleccionar fuente</option>
+              <option *ngFor="let fuente of fuentesIncendio" [value]="fuente">{{ fuente }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="areaAfectada">Área Afectada (hectáreas) *</label>
+            <input type="number" formControlName="areaAfectada" id="areaAfectada"
+                   class="form-control" required min="0" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Ubicación</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombreCiudad">Ciudad *</label>
+            <input type="text" formControlName="nombreCiudad" id="nombreCiudad"
+                   class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pais">País *</label>
+            <input type="text" formControlName="pais" id="pais"
+                   class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="region">Región</label>
+            <input type="text" formControlName="region" id="region" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="poblacion">Población</label>
+            <input type="number" formControlName="poblacion" id="poblacion"
+                   class="form-control" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="latitud">Latitud *</label>
+            <input type="number" formControlName="latitud" id="latitud"
+                   class="form-control" required step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="longitud">Longitud *</label>
+            <input type="number" formControlName="longitud" id="longitud"
+                   class="form-control" required step="any">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Descripción</h3>
+        <div class="form-group">
+          <label for="descripcion">Descripción del Incendio *</label>
+          <textarea formControlName="descripcion" id="descripcion"
+                    class="form-control" rows="4" required
+                    placeholder="Describe los detalles del incendio..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || cargando">
+          <i class="icon-save"></i> Guardar Cambios
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+          <i class="icon-cancel"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

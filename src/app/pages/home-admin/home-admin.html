@@ -1,0 +1,1574 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
+    <!-- Logo/Header -->
+    <div class="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-orange-500 to-red-600">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-fire.png" alt="logo" class="size-12">
+        <span class="text-xl font-bold text-white">ApuNina Admin</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="mt-6 px-3">
+      <div class="space-y-2">
+        <button *ngFor="let item of menuItems" (click)="cambiarVista(item.id)" [class]="item.active
+            ? 'bg-orange-50 border-r-2 border-orange-500 text-orange-700'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+          class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-l-lg transition-colors duration-200">
+
+          <!-- Dashboard Icon -->
+          <svg *ngIf="item.id === 'dashboard'" class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#dashboard" />
+          </svg>
+
+          <!-- Mapa Icon -->
+          <svg *ngIf="item.id === 'mapa'" class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#mapa" />
+          </svg>
+
+          <!-- Fire Icon -->
+          <svg *ngIf="item.id === 'incendios'" class="w-5 h-5 mr-3" width="24" fill="none" stroke="currentColor"
+            viewBox="0 0 1024 1024">
+            <use xlink:href="/assets/sprite.svg#fire" />
+          </svg>
+
+          <!-- Report Icon -->
+          <svg *ngIf="item.id === 'reportes'" class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#report" />
+          </svg>
+
+          <!-- History Icon -->
+          <svg *ngIf="item.id === 'historial'" class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#history" />
+          </svg>
+
+          <!-- estadisticas Icon -->
+          <svg *ngIf="item.id === 'estadisticas'" class="w-5 h-5 mr-3" stroke="currentColor" fill="none"
+            viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#barras" />
+          </svg>
+
+          <!-- Notificaciones Icon -->
+          <svg *ngIf="item.id === 'notificaciones'" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <use xlink:href="/assets/sprite.svg#notification" />
+          </svg>
+
+          {{ item.label }}
+          <!-- Badge de notificaciones no leídas -->
+          <span *ngIf="item.id === 'notificaciones' && notificacionesNoLeidas > 0"
+            class="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+            {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+          </span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- User Info at Bottom -->
+    <div class="absolute bottom-0 w-full p-4 border-t border-gray-200">
+      <div class="flex items-center gap-4 relative">
+        <div class="inline-block group cursor-pointer" (click)="togglePopover()">
+          <div class="flex items-center gap-2">
+            <img *ngIf="userInfo?.foto" [src]="userInfo.foto" alt="Foto de perfil"
+              class="w-11 h-11 rounded-full object-cover border border-gray-300" />
+            <div class="flex-1 min-w-0">
+              <span class="text-sm font-medium text-gray-900 block truncate">{{ userInfo?.nombre }}</span>
+              <span class="text-xs text-gray-500 block truncate">Administrador</span>
+            </div>
+          </div>
+          <div
+            class="absolute bottom-0 -right-1.5 w-5 h-5 flex items-center justify-center bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-gray-300"
+            [ngClass]="{
+              'opacity-100': showPopover,
+              'opacity-0': !showPopover
+            }">
+            <svg class="w-3 h-3 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div *ngIf="showPopover" #popoverMenu
+          class="absolute bottom-full left-0 mb-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 pt-2 pb-3">
+          <div class="px-4 py-3 flex gap-3">
+            <div class="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
+              <img [src]="userInfo?.foto" alt="Foto de perfil" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-gray-900 font-medium mb-1 truncate">
+                {{ userInfo?.nombre }}
+              </div>
+              <div class="text-sm text-gray-500 truncate">
+                {{ userInfo?.email }}
+              </div>
+            </div>
+          </div>
+          <ul>
+            <li>
+              <button
+                class="w-full flex items-center gap-3 px-6 py-2 hover:bg-gray-100 text-red-600 text-sm border-t border-gray-200"
+                (click)="logOut()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar sesión
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="ml-64 min-h-screen">
+    <!-- Top Bar -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900">
+              {{ vistaActual === 'dashboard' ? 'Dashboard' :
+              vistaActual === 'mapa' ? 'Mapa de Incendios' :
+              vistaActual === 'incendios' ? 'Gestión de Incendios' :
+              vistaActual === 'reportes' ? 'Reportes Recientes' :
+              vistaActual === 'estadisticas' ? 'Estadísticas' :
+              vistaActual === 'notificaciones' ? 'Notificaciones' :
+              'Panel de Administración' }}
+            </h1>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ vistaActual === 'dashboard' ? 'Resumen general del sistema de monitoreo' :
+              vistaActual === 'mapa' ? 'Visualización geográfica de incendios activos y reportes recientes' :
+              vistaActual === 'incendios' ? 'Administra y monitorea todos los incendios reportados' :
+              vistaActual === 'reportes' ? 'Revisa los reportes más recientes' :
+              vistaActual === 'estadisticas' ? 'Analiza las métricas del sistema' :
+              vistaActual === 'notificaciones' ? 'Gestiona las notificaciones del sistema y alertas generales' :
+              '' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-4">
+            <!-- Botón de Notificaciones -->
+            <div class="relative">
+              <button (click)="togglePanelNotificaciones()"
+                class="notification-button relative p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded-full" title="Ver notificaciones">
+                <span class="sr-only">Ver notificaciones</span>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <use xlink:href="/assets/sprite.svg#notification" />
+                </svg>
+                <!-- Badge de notificaciones -->
+                <span *ngIf="notificacionesNoLeidas > 0"
+                  class="notification-badge absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                  {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+                </span>
+              </button>
+
+              <!-- Panel desplegable de notificaciones -->
+              <div *ngIf="mostrarPanelNotificaciones"
+                class="notification-panel absolute right-0 mt-2 w-90 bg-white rounded-lg shadow-lg border border-gray-300 z-50 max-h-[32rem] overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Notificaciones</h3>
+                    <button *ngIf="notificacionesNoLeidas > 0" (click)="marcarTodasNotificacionesComoLeidas()"
+                      class="text-sm text-orange-600 hover:text-orange-700">
+                      Marcar todas como leídas
+                    </button>
+                  </div>
+                </div>
+
+                <div class="notification-list max-h-96 overflow-y-auto overflow-x-hidden">
+                  <!-- Loading spinner -->
+                  <div *ngIf="cargandoNotificaciones" class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    <span class="ml-2 text-sm text-gray-500">Cargando...</span>
+                  </div>
+
+                  <!-- Lista de notificaciones -->
+                  <div *ngIf="!cargandoNotificaciones && notificaciones.length > 0" class="divide-y divide-gray-200">
+                    <div *ngFor="let notificacion of notificaciones.slice(0, 5)"
+                      (click)="marcarNotificacionComoLeida(notificacion)"
+                      [class]="'notification-item p-4 hover:bg-gray-50 cursor-pointer transition-colors ' + obtenerClasePrioridad(notificacion.tipoNotificacion)"
+                      [ngClass]="{ 'unread bg-blue-50': !notificacion.leida, 'read': notificacion.leida }">
+
+                      <div class="flex items-start space-x-3">
+                        <!-- Icono -->
+                        <div
+                          [class]="'notification-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ' + obtenerClaseNotificacion(notificacion.tipoNotificacion)">
+
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <!-- Icono dinámico según el tipo -->
+                            <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'fire'"
+                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+
+                            <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'refresh'"
+                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'warning'"
+                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'bell'"
+                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                          </svg>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-gray-900">{{ notificacion.titulo }}</p>
+                          <p class="text-sm text-gray-600 mt-1">{{ notificacion.mensaje }}</p>
+                          <p class="text-xs text-gray-400 mt-2">{{ notificacion.fechaCreacion | date:'dd/MM/yyyy HH:mm'
+                            }}</p>
+                        </div>
+
+                        <!-- Indicador de no leída -->
+                        <div *ngIf="!notificacion.leida" class="flex-shrink-0">
+                          <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sin notificaciones -->
+                  <div *ngIf="!cargandoNotificaciones && notificaciones.length === 0"
+                    class="p-6 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <p class="text-sm">No tienes notificaciones</p>
+                  </div>
+                </div>
+
+                <!-- Footer del panel -->
+                <div class="p-3 border-t border-gray-200 bg-gray-50">
+                  <button (click)="cambiarVista('notificaciones')"
+                    class="w-full text-center text-sm text-orange-600 hover:text-orange-700 font-medium">
+                    Ver todas las notificaciones
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-sm text-gray-500">
+              {{ fechaActual | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd" />
+        </svg>
+        <span class="text-red-800">{{ error }}</span>
+        <button (click)="error = ''" class="ml-auto text-red-400 hover:text-red-600">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="cargando" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <span class="ml-3 text-gray-600">Cargando...</span>
+    </div>
+
+    <!-- Content Area -->
+    <main class="p-6">
+
+      <!-- Dashboard View -->
+      <!-- Vista del Mapa de Incendios -->
+      <div *ngIf="vistaActual === 'mapa' && !cargando">
+        <div class="mapa-container">
+          <!-- Controles del Mapa -->
+          <div class="mapa-controles">
+            <h3>Filtros de Visualización</h3>
+
+            <!-- Filtro por Estado -->
+            <div class="filtro-grupo">
+              <label class="filtro-label">Estados a mostrar:</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.estados.reportado" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="status-badge status-reportado">REPORTADO</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.estados.enCurso" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="status-badge status-en-curso">EN CURSO</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.estados.controlado" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="status-badge status-controlado">CONTROLADO</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.estados.extinguido" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="status-badge status-extinguido">EXTINGUIDO</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Filtro por Prioridad -->
+            <div class="filtro-grupo">
+              <label class="filtro-label">Nivel de Urgencia:</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.prioridades.alta" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="priority-badge priority-alta">ALTA/CRÍTICA</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.prioridades.media" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="priority-badge priority-media">MEDIA</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" [(ngModel)]="filtrosMapa.prioridades.baja" (change)="aplicarFiltrosMapa()">
+                  <span class="checkmark"></span>
+                  <span class="priority-badge priority-baja">BAJA</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Filtro por Fecha -->
+            <div class="filtro-grupo">
+              <label class="filtro-label">Período de tiempo:</label>
+              <div class="date-filters">
+                <input type="date" [(ngModel)]="filtrosMapa.fechaInicio" (change)="aplicarFiltrosMapa()"
+                  class="date-input">
+                <span>hasta</span>
+                <input type="date" [(ngModel)]="filtrosMapa.fechaFin" (change)="aplicarFiltrosMapa()"
+                  class="date-input">
+              </div>
+            </div>
+
+            <!-- Botones de Control -->
+            <div class="mapa-botones">
+              <button class="btn-secondary" (click)="limpiarFiltrosMapa()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                Limpiar Filtros
+              </button>
+              <button class="btn-primary" (click)="centrarMapa()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
+                </svg>
+                Centrar Mapa
+              </button>
+            </div>
+          </div>
+
+          <!-- Mapa Principal -->
+          <div class="mapa-principal-container">
+            <div id="mapa-incendios" class="mapa-principal"></div>
+
+            <!-- Leyenda del Mapa -->
+            <div class="mapa-leyenda">
+              <h4>Leyenda</h4>
+
+              <div class="leyenda-seccion">
+                <h5>Estados</h5>
+                <div class="leyenda-items">
+                  <div class="leyenda-item">
+                    <div class="marker-icon marker-reportado"></div>
+                    <span>Reportado</span>
+                  </div>
+                  <div class="leyenda-item">
+                    <div class="marker-icon marker-en-curso"></div>
+                    <span>En Curso</span>
+                  </div>
+                  <div class="leyenda-item">
+                    <div class="marker-icon marker-controlado"></div>
+                    <span>Controlado</span>
+                  </div>
+                  <div class="leyenda-item">
+                    <div class="marker-icon marker-extinguido"></div>
+                    <span>Extinguido</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="leyenda-seccion">
+                <h5>Nivel de Urgencia</h5>
+                <div class="leyenda-items">
+                  <div class="leyenda-item">
+                    <div class="priority-indicator priority-alta-indicator"></div>
+                    <span>Alta/Crítica</span>
+                  </div>
+                  <div class="leyenda-item">
+                    <div class="priority-indicator priority-media-indicator"></div>
+                    <span>Media</span>
+                  </div>
+                  <div class="leyenda-item">
+                    <div class="priority-indicator priority-baja-indicator"></div>
+                    <span>Baja</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Vista de Dashboard -->
+      <div *ngIf="vistaActual === 'dashboard' && !cargando">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-600">Total Incendios</p>
+                <p class="text-2xl font-bold text-gray-900">{{ estadisticas.totalIncendios }}</p>
+              </div>
+              <div class="bg-blue-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <use xlink:href="/assets/sprite.svg#barras" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+            <div class="flex items-center">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-600">Incendios Activos</p>
+                <p class="text-2xl font-bold text-gray-900">{{ estadisticas.incendiosActivos }}</p>
+              </div>
+              <div class="bg-red-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 1024 1024">
+                  <use xlink:href="/assets/sprite.svg#fire" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-600">Reportes Recientes</p>
+                <p class="text-2xl font-bold text-gray-900">{{ estadisticas.incendiosRecientes }}</p>
+              </div>
+              <div class="bg-yellow-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <use xlink:href="/assets/sprite.svg#history" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-600">Área Total Afectada</p>
+                <p class="text-2xl font-bold text-gray-900">{{ estadisticas.areaTotalAfectada | number:'1.1-1' }} ha</p>
+              </div>
+              <div class="bg-green-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <use xlink:href="/assets/sprite.svg#world" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Incidents -->
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Incendios Recientes</h3>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <div *ngFor="let incendio of incendios" class="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+              (click)="verDetalleIncendio(incendio)">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <span [class]="obtenerClaseUrgencia(incendio.nivelUrgencia)"
+                      class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ incendio.nivelUrgencia }}
+                    </span>
+                    <span [class]="obtenerClaseEstado(incendio.estado)"
+                      class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ incendio.estado.replace('_', ' ') }}
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-medium text-gray-900 mt-2">{{ incendio.nombreCiudad }}, {{ incendio.pais }}
+                  </h4>
+                  <p class="text-sm text-gray-600">{{ incendio.descripcion | slice:0:100 }}...</p>
+                  <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                    <span>Área: {{ incendio.areaAfectada }} ha</span>
+                    <span>{{ formatearFecha(incendio.fechaReporte) }}</span>
+                    <span>Por: {{ incendio.nombreUsuario }}</span>
+                  </div>
+                </div>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gestión de Incendios View -->
+      <div *ngIf="vistaActual === 'incendios' && !cargando">
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Filtros de Búsqueda</h3>
+          <form [formGroup]="filtroForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select formControlName="estado"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+                <option value="">Todos</option>
+                <option *ngFor="let estado of estadosDisponibles" [value]="estado">
+                  {{ estado.replace('_', ' ') }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Urgencia</label>
+              <select formControlName="nivelUrgencia"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+                <option value="">Todos</option>
+                <option *ngFor="let nivel of nivelesUrgencia" [value]="nivel">{{ nivel }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
+              <input type="date" formControlName="fechaInicio"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
+              <input type="date" formControlName="fechaFin"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+              <input type="text" formControlName="nombreCiudad" placeholder="Nombre de la ciudad"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+              <input type="text" formControlName="pais" placeholder="País"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Área Mínima (ha)</label>
+              <input type="number" formControlName="areaMinima" placeholder="0" min="0"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Área Máxima (ha)</label>
+              <input type="number" formControlName="areaMaxima" placeholder="1000" min="0"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+            </div>
+          </form>
+
+          <div class="flex gap-3 mt-4">
+            <button (click)="aplicarFiltros()"
+              class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+              Aplicar Filtros
+            </button>
+            <button (click)="limpiarFiltros()"
+              class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+              Limpiar
+            </button>
+            <button (click)="abrirModalExportacion()"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+              Exportar
+            </button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-gray-900">Incendios Registrados</h3>
+              <span class="text-sm text-gray-500">{{ totalElementos }} resultados</span>
+            </div>
+          </div>
+
+          <!-- Grid de incendios -->
+          <div *ngIf="incendios.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            <div *ngFor="let incendio of incendios"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex gap-2">
+                  <span [class]="obtenerClaseUrgencia(incendio.nivelUrgencia)"
+                    class="px-2 py-1 text-xs font-semibold rounded-full">
+                    {{ incendio.nivelUrgencia }}
+                  </span>
+                  <span [class]="obtenerClaseEstado(incendio.estado)"
+                    class="px-2 py-1 text-xs font-semibold rounded-full">
+                    {{ incendio.estado.replace('_', ' ') }}
+                  </span>
+                </div>
+              </div>
+
+              <h4 class="font-medium text-gray-900 mb-2">{{ incendio.nombreCiudad }}, {{ incendio.pais }}</h4>
+              <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ incendio.descripcion }}</p>
+
+              <div class="space-y-1 text-xs text-gray-500 mb-4">
+                <div class="flex justify-between">
+                  <span>Área afectada:</span>
+                  <span class="font-medium">{{ incendio.areaAfectada }} ha</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Tipo vegetación:</span>
+                  <span class="font-medium">{{ incendio.tipoVegetacion }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Reportado por:</span>
+                  <span class="font-medium">{{ incendio.nombreUsuario }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Fecha:</span>
+                  <span class="font-medium">{{ formatearFecha(incendio.fechaReporte) }}</span>
+                </div>
+              </div>
+
+              <!-- Botones de acción -->
+              <div class="flex gap-2 pt-3 border-t border-gray-100">
+                <button (click)="verDetalleIncendio(incendio)"
+                  class="flex-1 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
+                  Ver Detalle
+                </button>
+                <button *ngIf="incendio.estado !== 'EXTINGUIDO'"
+                  (click)="abrirModalActualizacion(incendio); $event.stopPropagation()"
+                  class="flex-1 px-3 py-2 text-xs font-medium text-orange-600 bg-orange-50 rounded-md hover:bg-orange-100 transition-colors">
+                  Actualizar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- No results -->
+          <div *ngIf="incendios.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No se encontraron incendios</h3>
+            <p class="mt-1 text-sm text-gray-500">No hay incendios que coincidan con los filtros aplicados.</p>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="totalPaginas > 1" class="px-6 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <button (click)="paginaAnterior()" [disabled]="paginaActual === 0"
+                  class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Anterior
+                </button>
+                <span class="text-sm text-gray-700">
+                  Página {{ paginaActual + 1 }} de {{ totalPaginas }}
+                </span>
+                <button (click)="paginaSiguiente()" [disabled]="paginaActual >= totalPaginas - 1"
+                  class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Siguiente
+                </button>
+              </div>
+              <div class="text-sm text-gray-500">
+                Mostrando {{ incendios.length }} de {{ totalElementos }} resultados
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reportes Recientes View -->
+      <div *ngIf="vistaActual === 'reportes' && !cargando">
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Reportes de las Últimas 48 Horas</h3>
+          </div>
+
+          <div *ngIf="incendios.length > 0" class="divide-y divide-gray-200">
+            <div *ngFor="let incendio of incendios" class="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+              (click)="verDetalleIncendio(incendio)">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span [class]="obtenerClaseUrgencia(incendio.nivelUrgencia)"
+                      class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ incendio.nivelUrgencia }}
+                    </span>
+                    <span [class]="obtenerClaseEstado(incendio.estado)"
+                      class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ incendio.estado.replace('_', ' ') }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                      {{ formatearFecha(incendio.fechaReporte) }}
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-medium text-gray-900">{{ incendio.nombreCiudad }}, {{ incendio.pais }}</h4>
+                  <p class="text-sm text-gray-600 mt-1">{{ incendio.descripcion | slice:0:150 }}...</p>
+                  <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                    <span>Área: {{ incendio.areaAfectada }} ha</span>
+                    <span>Tipo: {{ incendio.tipoVegetacion }}</span>
+                    <span>Reportado por: {{ incendio.nombreUsuario }}</span>
+                  </div>
+                </div>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="incendios.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay reportes recientes</h3>
+            <p class="mt-1 text-sm text-gray-500">No se han registrado incendios en las últimas 48 horas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial de Incendios Extinguidos View -->
+      <div *ngIf="vistaActual === 'historial' && !cargando">
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-gray-900">Historial de Incendios Extinguidos</h3>
+              <div class="flex gap-2">
+                <button (click)="abrirModalExportacion()"
+                  class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                  Exportar Historial
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="incendios.length > 0" class="divide-y divide-gray-200">
+            <div *ngFor="let incendio of incendios" class="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+              (click)="verDetalleIncendio(incendio)">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                      EXTINGUIDO
+                    </span>
+                    <span [class]="obtenerClaseUrgencia(incendio.nivelUrgencia)"
+                      class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ incendio.nivelUrgencia }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                      Extinguido: {{ formatearFecha(incendio.fechaActualizacion || incendio.fechaReporte) }}
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-medium text-gray-900">{{ incendio.nombreCiudad }}, {{ incendio.pais }}</h4>
+                  <p class="text-sm text-gray-600 mt-1">{{ incendio.descripcion | slice:0:120 }}...</p>
+                  <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                    <span>Área afectada: {{ incendio.areaAfectada }} ha</span>
+                    <span>Duración: {{ calcularDuracion(incendio.fechaReporte, incendio.fechaActualizacion) }}</span>
+                    <span>Reportado por: {{ incendio.nombreUsuario }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="incendios.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay incendios extinguidos</h3>
+            <p class="mt-1 text-sm text-gray-500">No se han registrado incendios extinguidos aún.</p>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="totalPaginas > 1" class="px-6 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 flex justify-between sm:hidden">
+                <button (click)="paginaAnterior()" [disabled]="paginaActual === 0"
+                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Anterior
+                </button>
+                <button (click)="paginaSiguiente()" [disabled]="paginaActual >= totalPaginas - 1"
+                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Siguiente
+                </button>
+              </div>
+              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm text-gray-700">
+                    Mostrando <span class="font-medium">{{ paginaActual * tamanoPagina + 1 }}</span> a
+                    <span class="font-medium">{{ Math.min((paginaActual + 1) * tamanoPagina, totalElementos) }}</span>
+                    de
+                    <span class="font-medium">{{ totalElementos }}</span> resultados
+                  </p>
+                </div>
+                <div>
+                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button (click)="paginaAnterior()" [disabled]="paginaActual === 0"
+                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <button *ngFor="let pagina of [].constructor(Math.min(5, totalPaginas)); let i = index"
+                      (click)="irAPagina(i)"
+                      [class]="i === paginaActual ? 'bg-orange-50 border-orange-500 text-orange-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                      class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                      {{ i + 1 }}
+                    </button>
+                    <button (click)="paginaSiguiente()" [disabled]="paginaActual >= totalPaginas - 1"
+                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas View -->
+      <div *ngIf="vistaActual === 'estadisticas' && !cargando">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Stats Overview -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Resumen General</h3>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Total de Incendios</span>
+                <span class="text-lg font-semibold text-gray-900">{{ estadisticas.totalIncendios }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Incendios Activos</span>
+                <span class="text-lg font-semibold text-red-600">{{ estadisticas.incendiosActivos }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Incendios Controlados</span>
+                <span class="text-lg font-semibold text-green-600">{{ estadisticas.incendiosControlados }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Incendios Extinguidos</span>
+                <span class="text-lg font-semibold text-gray-600">{{ estadisticas.incendiosExtinguidos }}</span>
+              </div>
+              <div class="flex justify-between items-center border-t pt-4">
+                <span class="text-sm text-gray-600">Área Total Afectada</span>
+                <span class="text-lg font-semibold text-orange-600">{{ estadisticas.areaTotalAfectada | number:'1.1-1'
+                  }} ha</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado Distribution -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Distribución por Estado</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm text-gray-600">Reportados</span>
+                </div>
+                <span class="text-sm font-medium">{{ (estadisticas.totalIncendios - estadisticas.incendiosControlados -
+                  estadisticas.incendiosExtinguidos - estadisticas.incendiosActivos) || 0 }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span class="text-sm text-gray-600">En Proceso</span>
+                </div>
+                <span class="text-sm font-medium">{{ estadisticas.incendiosActivos }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span class="text-sm text-gray-600">Controlados</span>
+                </div>
+                <span class="text-sm font-medium">{{ estadisticas.incendiosControlados }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                  <span class="text-sm text-gray-600">Extinguidos</span>
+                </div>
+                <span class="text-sm font-medium">{{ estadisticas.incendiosExtinguidos }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista de Notificaciones -->
+      <div *ngIf="vistaActual === 'notificaciones' && !cargando">
+        <div class="space-y-6">
+          <!-- Header con botón de alerta general -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-medium text-gray-900">Centro de Notificaciones</h3>
+                <p class="text-sm text-gray-600 mt-1">
+                  Gestiona las notificaciones del sistema y envía alertas generales
+                </p>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-500">
+                  <span class="font-medium">{{ notificacionesNoLeidas }}</span> no leídas
+                </div>
+                <button (click)="abrirModalAlertaGeneral()"
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                  Crear Alerta General
+                </button>
+              </div>
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="mt-4 flex items-center gap-4">
+              <button *ngIf="notificacionesNoLeidas > 0" (click)="marcarTodasNotificacionesComoLeidas()"
+                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Marcar todas como leídas
+              </button>
+              <button (click)="cargarNotificaciones()"
+                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Actualizar
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de notificaciones -->
+          <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="text-lg font-medium text-gray-900">Todas las Notificaciones</h3>
+            </div>
+
+            <!-- Loading state -->
+            <div *ngIf="cargandoNotificaciones" class="flex items-center justify-center py-12">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+              <span class="ml-3 text-gray-600">Cargando notificaciones...</span>
+            </div>
+
+            <!-- Lista de notificaciones -->
+            <div *ngIf="!cargandoNotificaciones && notificaciones.length > 0" class="divide-y divide-gray-200">
+              <div *ngFor="let notificacion of notificaciones; trackBy: trackByNotificacion"
+                (click)="marcarNotificacionComoLeida(notificacion)"
+                [class]="'p-6 hover:bg-gray-50 cursor-pointer transition-colors ' + obtenerClasePrioridad(notificacion.tipoNotificacion)"
+                [ngClass]="{ 'bg-blue-50': !notificacion.leida, 'opacity-75': notificacion.leida }">
+
+                <div class="flex items-start space-x-4">
+                  <!-- Icono de tipo de notificación -->
+                  <div
+                    [class]="'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ' + obtenerClaseNotificacion(notificacion.tipoNotificacion)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <!-- Icono dinámico según el tipo -->
+                      <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'fire'"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                      <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'refresh'"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'warning'"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'info'"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'bell'"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                  </div>
+
+                  <!-- Contenido de la notificación -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <h4 class="text-sm font-semibold text-gray-900">{{ notificacion.titulo }}</h4>
+                      <div class="flex items-center gap-2">
+                        <!-- Badge de prioridad basado en tipo -->
+                        <span [ngClass]="{
+                          'bg-red-100 text-red-800': obtenerPrioridadPorTipo(notificacion.tipoNotificacion) === 'ALTA',
+                          'bg-yellow-100 text-yellow-800': obtenerPrioridadPorTipo(notificacion.tipoNotificacion) === 'MEDIA',
+                          'bg-green-100 text-green-800': obtenerPrioridadPorTipo(notificacion.tipoNotificacion) === 'BAJA'
+                        }" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
+                          {{ obtenerPrioridadPorTipo(notificacion.tipoNotificacion) }}
+                        </span>
+                        <!-- Indicador de no leída -->
+                        <div *ngIf="!notificacion.leida" class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      </div>
+                    </div>
+
+                    <p class="text-sm text-gray-600 mt-1">{{ notificacion.mensaje }}</p>
+
+                    <!-- Información adicional -->
+                    <div class="flex items-center justify-between mt-3">
+                      <div class="flex items-center gap-4 text-xs text-gray-400">
+                        <span>{{ notificacion.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                        <span *ngIf="notificacion.tipoNotificacion"
+                          class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                          {{ getTipoNotificacionLabel(notificacion.tipoNotificacion) }}
+                        </span>
+                      </div>
+                      <div *ngIf="notificacion.leida && notificacion.fechaLectura" class="text-xs text-gray-400">
+                        Leída el {{ notificacion.fechaLectura | date:'dd/MM/yyyy HH:mm' }}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sin notificaciones -->
+            <div *ngIf="!cargandoNotificaciones && notificaciones.length === 0" class="text-center py-12">
+              <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No hay notificaciones</h3>
+              <p class="text-gray-500">Las notificaciones aparecerán aquí cuando se generen eventos en el sistema.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modal de Detalle de Incendio -->
+  <div *ngIf="incendioSeleccionado" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-3xl max-w-4xl shadow-lg rounded-md bg-white">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 ">Detalle del Incendio</h3>
+        <button (click)="cerrarDetalle()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="max-h-96 overflow-y-auto">
+        <div class="space-y-4">
+          <div class="flex gap-2 mb-4">
+            <span [class]="obtenerClaseUrgencia(incendioSeleccionado.nivelUrgencia)"
+              class="px-2 py-1 text-xs font-semibold rounded-full">
+              {{ incendioSeleccionado.nivelUrgencia }}
+            </span>
+            <span [class]="obtenerClaseEstado(incendioSeleccionado.estado)"
+              class="px-2 py-1 text-xs font-semibold rounded-full">
+              {{ incendioSeleccionado.estado.replace('_', ' ') }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <label class="block text-gray-500">Ubicación:</label>
+              <p class="font-medium">{{ incendioSeleccionado.nombreCiudad }}, {{ incendioSeleccionado.pais }}</p>
+            </div>
+            <div>
+              <label class="block text-gray-500">Área Afectada:</label>
+              <p class="font-medium">{{ incendioSeleccionado.areaAfectada }} hectáreas</p>
+            </div>
+            <div>
+              <label class="block text-gray-500">Tipo de Vegetación:</label>
+              <p class="font-medium">{{ incendioSeleccionado.tipoVegetacion }}</p>
+            </div>
+            <div>
+              <label class="block text-gray-500">Fuente:</label>
+              <p class="font-medium">{{ incendioSeleccionado.fuenteIncendio }}</p>
+            </div>
+            <div>
+              <label class="block text-gray-500">Reportado por:</label>
+              <p class="font-medium">{{ incendioSeleccionado.nombreUsuario }}</p>
+            </div>
+            <div>
+              <label class="block text-gray-500">Fecha de Reporte:</label>
+              <p class="font-medium">{{ formatearFecha(incendioSeleccionado.fechaReporte) }}</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-500 mb-1">Descripción:</label>
+            <p class="text-sm bg-gray-50 p-3 rounded-md">{{ incendioSeleccionado.descripcion }}</p>
+          </div>
+
+          <div>
+            <label class="block text-gray-500 mb-1">Coordenadas:</label>
+            <p class="text-sm">{{ incendioSeleccionado.latitud }}, {{ incendioSeleccionado.longitud }}</p>
+          </div>
+
+          <!-- Archivos subidos -->
+          <div *ngIf="incendioSeleccionado.archivosSubidos && incendioSeleccionado.archivosSubidos.length > 0">
+            <label class="block text-gray-500 mb-2">Archivos Adjuntos ({{ incendioSeleccionado.archivosSubidos.length
+              }}):</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div *ngFor="let archivo of incendioSeleccionado.archivosSubidos"
+                class="border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow">
+
+                <!-- Vista previa de imagen -->
+                <div *ngIf="esImagen(archivo.tipoArchivo)" class="mb-2">
+                  <img [src]="archivo.urlArchivo" [alt]="archivo.nombreArchivo"
+                    class="w-full h-20 object-cover rounded cursor-pointer" (click)="abrirArchivoEnModal(archivo)"
+                    (error)="onImageError($event)">
+                </div>
+
+                <!-- Vista previa de video -->
+                <div *ngIf="esVideo(archivo.tipoArchivo)" class="mb-2 relative">
+                  <video class="w-full h-20 object-cover rounded cursor-pointer"
+                    [poster]="obtenerThumbnailVideo(archivo)" (click)="abrirArchivoEnModal(archivo)">
+                    <source [src]="archivo.urlArchivo" [type]="archivo.tipoArchivo">
+                  </video>
+                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded">
+                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Icono para otros tipos de archivo -->
+                <div *ngIf="!esImagen(archivo.tipoArchivo) && !esVideo(archivo.tipoArchivo)" class="mb-2">
+                  <div class="w-full h-20 bg-gray-100 rounded flex items-center justify-center cursor-pointer"
+                    (click)="abrirArchivoEnModal(archivo)">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Información del archivo -->
+                <div class="text-xs">
+                  <p class="font-medium text-gray-900 truncate" [title]="archivo.nombreArchivo">
+                    {{ archivo.nombreArchivo }}
+                  </p>
+                  <p class="text-gray-500 mt-1">
+                    {{ formatearTamanoArchivo(archivo.tamanoArchivo) }}
+                  </p>
+                  <p class="text-gray-500">
+                    {{ archivo.tipoArchivo }}
+                  </p>
+                  <div class="flex gap-1 mt-2">
+                    <button (click)="abrirArchivoEnModal(archivo)"
+                      class="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">
+                      Ver
+                    </button>
+                    <button (click)="descargarArchivoIndividual(archivo)"
+                      class="flex-1 px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100">
+                      Descargar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje si no hay archivos -->
+          <div *ngIf="!incendioSeleccionado.archivosSubidos || incendioSeleccionado.archivosSubidos.length === 0">
+            <label class="block text-gray-500 mb-2">Archivos Adjuntos:</label>
+            <div class="text-center py-4 bg-gray-50 rounded-md">
+              <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <p class="text-sm text-gray-500 mt-2">No hay archivos adjuntos</p>
+            </div>
+          </div>
+
+          <!-- Comentarios/Historial de cambios -->
+          <div *ngIf="incendioSeleccionado.comentarios && incendioSeleccionado.comentarios.length > 0"
+            class="bg-green-100 p-4 rounded-md mt-4">
+            <label class="block text-gray-600 mb-2">Historial de Comentarios ({{ incendioSeleccionado.comentarios.length
+              }}):</label>
+            <div class="space-y-3 max-h-32 overflow-y-auto">
+              <div *ngFor="let comentario of incendioSeleccionado.comentarios"
+                class="bg-gray-50 rounded-md p-3 border-l-4 border-blue-200">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-medium text-gray-900">{{ comentario.nombreUsuario || 'Administrador'
+                    }}</span>
+                  <span class="text-xs text-gray-500">{{ formatearFecha(comentario.fechaComentario) }}</span>
+                </div>
+                <p class="text-sm text-gray-700">{{ comentario.comentario }}</p>
+                <div *ngIf="comentario.accionTomada" class="mt-2 pt-2 border-t border-gray-200">
+                  <span class="text-xs font-medium text-green-700">Acción tomada:</span>
+                  <p class="text-xs text-green-600">{{ comentario.accionTomada }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button (click)="cerrarDetalle()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+          Cerrar
+        </button>
+        <button *ngIf="incendioSeleccionado.estado !== 'EXTINGUIDO'"
+          (click)="abrirModalActualizacion(incendioSeleccionado)"
+          class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">
+          Actualizar Estado
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Actualización de Estado -->
+  <div *ngIf="mostrarModalActualizacion"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-3xl max-w-lg shadow-lg rounded-md bg-white">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Actualizar Estado del Incendio</h3>
+        <button (click)="cerrarModalActualizacion()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="actualizacionForm" (ngSubmit)="actualizarEstadoIncendio()">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nuevo Estado *</label>
+            <select formControlName="nuevoEstado"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3">
+              <option value="">Seleccione un estado</option>
+              <option *ngFor="let estado of estadosDisponibles" [value]="estado">
+                {{ estado.replace('_', ' ') }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Comentario</label>
+            <textarea formControlName="comentario" rows="3" placeholder="Agregar comentario sobre la actualización..."
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Acción Tomada</label>
+            <textarea formControlName="accionTomada" rows="2" placeholder="Describir las acciones realizadas..."
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-3"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" (click)="cerrarModalActualizacion()"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="!actualizacionForm.valid || procesandoActualizacion"
+            class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span *ngIf="procesandoActualizacion" class="inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              Actualizando...
+            </span>
+            <span *ngIf="!procesandoActualizacion">Actualizar Estado</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Exportación -->
+  <div *ngIf="mostrarModalExportacion"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 max-w-md shadow-lg rounded-md bg-white">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Exportar Datos</h3>
+        <button (click)="cerrarModalExportacion()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <p class="text-sm text-gray-600 mb-4">
+          Seleccione el formato de exportación. Los datos se exportarán según los filtros actuales aplicados.
+        </p>
+
+        <div class="space-y-3">
+          <button (click)="exportarDatos('json')" [disabled]="cargando"
+            class="w-full flex items-center justify-between p-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <p class="font-medium">JSON</p>
+                <p class="text-xs text-gray-500">Formato estructurado para desarrollo</p>
+              </div>
+            </div>
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+
+          <button (click)="exportarDatos('csv')" [disabled]="cargando"
+            class="w-full flex items-center justify-between p-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div>
+                <p class="font-medium">CSV</p>
+                <p class="text-xs text-gray-500">Compatible con Excel y hojas de cálculo</p>
+              </div>
+            </div>
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+
+          <button (click)="exportarDatos('excel')" [disabled]="cargando"
+            class="w-full flex items-center justify-between p-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <div>
+                <p class="font-medium">Excel</p>
+                <p class="text-xs text-gray-500">Archivo .xlsx con formato avanzado</p>
+              </div>
+            </div>
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+
+        </div>
+
+        <div *ngIf="cargando" class="flex items-center justify-center py-4">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+          <span class="ml-2 text-sm text-gray-600">Generando archivo...</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-6">
+        <button (click)="cerrarModalExportacion()" [disabled]="cargando"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ver archivos en pantalla completa -->
+  <div *ngIf="mostrarModalArchivo && archivoSeleccionado"
+    class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center">
+      <!-- Botón cerrar -->
+      <button (click)="cerrarModalArchivo()"
+        class="absolute top-4 right-4 z-10 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Información del archivo -->
+      <div class="absolute top-4 left-4 z-10 bg-black bg-opacity-50 text-white p-3 rounded-lg">
+        <h4 class="font-medium">{{ archivoSeleccionado.nombreArchivo }}</h4>
+        <p class="text-sm opacity-75">{{ formatearTamanoArchivo(archivoSeleccionado.tamanoArchivo) }}</p>
+        <button (click)="descargarArchivoIndividual(archivoSeleccionado)"
+          class="mt-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+          Descargar
+        </button>
+      </div>
+
+      <!-- Contenido del archivo -->
+      <div class="w-full h-full flex items-center justify-center">
+        <!-- Imagen -->
+        <img *ngIf="esImagen(archivoSeleccionado.tipoArchivo)" [src]="archivoSeleccionado.urlArchivo"
+          [alt]="archivoSeleccionado.nombreArchivo" class="max-w-full max-h-full object-contain"
+          (error)="onImageError($event)">
+
+        <!-- Video -->
+        <video *ngIf="esVideo(archivoSeleccionado.tipoArchivo)" [src]="archivoSeleccionado.urlArchivo"
+          class="max-w-full max-h-full" controls preload="metadata">
+          Tu navegador no soporta la reproducción de video.
+        </video>
+
+        <!-- Otros archivos -->
+        <div *ngIf="!esImagen(archivoSeleccionado.tipoArchivo) && !esVideo(archivoSeleccionado.tipoArchivo)"
+          class="text-center text-white">
+          <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3 class="text-lg font-medium mb-2">{{ archivoSeleccionado.nombreArchivo }}</h3>
+          <p class="text-gray-300 mb-4">Este tipo de archivo no se puede previsualizar</p>
+          <button (click)="descargarArchivoIndividual(archivoSeleccionado)"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Descargar para ver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Alerta General -->
+  <div *ngIf="mostrarModalAlertaGeneral"
+    class="alert-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[9999]">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Crear Alerta General</h3>
+        <button (click)="cerrarModalAlertaGeneral()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="alertaGeneralForm" (ngSubmit)="crearAlertaGeneral()">
+        <div class="space-y-4">
+          <div>
+            <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">
+              Título de la Alerta *
+            </label>
+            <input type="text" id="titulo" formControlName="titulo"
+              placeholder="Ej: Alerta Meteorológica - Vientos Fuertes"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              [class.border-red-500]="alertaGeneralForm.get('titulo')?.invalid && alertaGeneralForm.get('titulo')?.touched">
+            <div *ngIf="alertaGeneralForm.get('titulo')?.invalid && alertaGeneralForm.get('titulo')?.touched"
+              class="mt-1 text-sm text-red-600">
+              <span *ngIf="alertaGeneralForm.get('titulo')?.errors?.['required']">El título es requerido</span>
+              <span *ngIf="alertaGeneralForm.get('titulo')?.errors?.['minlength']">El título debe tener al menos 5
+                caracteres</span>
+              <span *ngIf="alertaGeneralForm.get('titulo')?.errors?.['maxlength']">El título no puede exceder 100
+                caracteres</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="mensaje" class="block text-sm font-medium text-gray-700 mb-1">
+              Mensaje de la Alerta *
+            </label>
+            <textarea id="mensaje" formControlName="mensaje" rows="4"
+              placeholder="Escriba el mensaje detallado de la alerta que se enviará a todos los usuarios..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 resize-none"
+              [class.border-red-500]="alertaGeneralForm.get('mensaje')?.invalid && alertaGeneralForm.get('mensaje')?.touched"></textarea>
+            <div class="mt-1 flex justify-between items-center">
+              <div *ngIf="alertaGeneralForm.get('mensaje')?.invalid && alertaGeneralForm.get('mensaje')?.touched"
+                class="text-sm text-red-600">
+                <span *ngIf="alertaGeneralForm.get('mensaje')?.errors?.['required']">El mensaje es requerido</span>
+                <span *ngIf="alertaGeneralForm.get('mensaje')?.errors?.['minlength']">El mensaje debe tener al menos 10
+                  caracteres</span>
+                <span *ngIf="alertaGeneralForm.get('mensaje')?.errors?.['maxlength']">El mensaje no puede exceder 500
+                  caracteres</span>
+              </div>
+              <span class="char-counter text-xs text-gray-400">
+                {{ alertaGeneralForm.get('mensaje')?.value?.length || 0 }}/500
+              </span>
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">Información importante</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                  <ul class="list-disc list-inside space-y-1">
+                    <li>Esta alerta se enviará a todos los usuarios registrados</li>
+                    <li>Los usuarios recibirán una notificación inmediatamente</li>
+                    <li>La alerta aparecerá en el dashboard y panel de notificaciones</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" (click)="cerrarModalAlertaGeneral()" [disabled]="procesandoAlerta"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="!alertaGeneralForm.valid || procesandoAlerta"
+            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+            <svg *ngIf="procesandoAlerta" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            {{ procesandoAlerta ? 'Enviando...' : 'Enviar Alerta General' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

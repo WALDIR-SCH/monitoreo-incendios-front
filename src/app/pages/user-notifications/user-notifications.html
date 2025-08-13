@@ -1,0 +1,278 @@
+<app-header-client></app-header-client>
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Mis Notificaciones</h1>
+      <p class="mt-2 text-gray-600">Mantente al día con las actualizaciones de tus reportes y alertas del sistema</p>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Total</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ totalElementos }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">No Leídas</p>
+            <p class="text-2xl font-semibold text-red-600">{{ notificacionesNoLeidas }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Leídas</p>
+            <p class="text-2xl font-semibold text-green-600">{{ totalElementos - notificacionesNoLeidas }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y acciones -->
+    <div class="bg-white rounded-lg shadow mb-6">
+      <div class="p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <!-- Filtro por tipo -->
+            <div>
+              <label for="filtroTipo" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <select id="filtroTipo" [(ngModel)]="filtroTipo" (change)="aplicarFiltroSeleccionado()"
+                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
+                <option value="">Todos los tipos</option>
+                <option value="NUEVO_REPORTE">Nuevo Reporte</option>
+                <option value="CAMBIO_ESTADO">Cambio de Estado</option>
+                <option value="ALERTA_GENERAL">Alerta General</option>
+                <option value="SISTEMA">Sistema</option>
+              </select>
+            </div>
+
+            <!-- Filtro por estado de lectura -->
+            <div>
+              <label for="filtroLeidas" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select id="filtroLeidas" [(ngModel)]="filtroLeidas" (change)="aplicarFiltroSeleccionado()"
+                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
+                <option value="todas">Todas</option>
+                <option value="no_leidas">No leídas</option>
+                <option value="leidas">Leídas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button (click)="limpiarFiltros()"
+                    class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Limpiar
+            </button>
+
+            <button *ngIf="notificacionesNoLeidas > 0"
+                    (click)="marcarTodasNotificacionesComoLeidas()"
+                    [disabled]="cargandoNotificaciones"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50">
+              <svg *ngIf="!cargandoNotificaciones" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div *ngIf="cargandoNotificaciones" class="animate-spin -ml-1 mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+              {{ cargandoNotificaciones ? 'Procesando...' : 'Marcar todas como leídas' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd" />
+        </svg>
+        <span class="text-red-800">{{ error }}</span>
+        <button (click)="error = ''" class="ml-auto text-red-400 hover:text-red-600">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="cargandoNotificaciones" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <span class="ml-3 text-gray-600">Cargando notificaciones...</span>
+    </div>
+
+    <!-- Lista de notificaciones -->
+    <div *ngIf="!cargandoNotificaciones" class="bg-white rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          Notificaciones
+          <span class="text-gray-500">({{ totalElementos }} total)</span>
+        </h3>
+      </div>
+
+      <!-- Notificaciones -->
+      <div *ngIf="notificaciones.length > 0" class="divide-y divide-gray-200">
+        <div *ngFor="let notificacion of notificaciones; trackBy: trackByNotificacion"
+             (click)="marcarNotificacionComoLeida(notificacion)"
+             class="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
+             [ngClass]="{ 'bg-blue-50 border-l-4 border-blue-500': !notificacion.leida, 'opacity-75': notificacion.leida }">
+
+          <div class="flex items-start space-x-4">
+            <!-- Icono de tipo de notificación -->
+            <div [class]="'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ' + obtenerClaseNotificacion(notificacion.tipoNotificacion)">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Icono dinámico según el tipo -->
+                <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'fire'"
+                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'refresh'"
+                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'warning'"
+                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'info'"
+                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path *ngIf="obtenerIconoNotificacion(notificacion.tipoNotificacion) === 'bell'"
+                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </div>
+
+            <!-- Contenido de la notificación -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <h4 class="text-lg font-semibold text-gray-900">{{ notificacion.titulo }}</h4>
+                <div class="flex items-center gap-2">
+                  <!-- Badge de tipo -->
+                  <span [class]="'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ' + obtenerClaseNotificacion(notificacion.tipoNotificacion)">
+                    {{ getTipoNotificacionLabel(notificacion.tipoNotificacion) }}
+                  </span>
+                  <!-- Indicador de no leída -->
+                  <div *ngIf="!notificacion.leida" class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                </div>
+              </div>
+
+              <p class="text-gray-700 mt-2 leading-relaxed">{{ notificacion.mensaje }}</p>
+
+              <!-- Información adicional -->
+              <div class="flex items-center justify-between mt-4">
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ notificacion.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  <span *ngIf="notificacion.leida && notificacion.fechaLectura" class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Leída el {{ notificacion.fechaLectura | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </div>
+
+                <!-- Botón para ver incendio relacionado -->
+                <button *ngIf="notificacion.idIncendio"
+                        (click)="verIncendioRelacionado(notificacion.idIncendio); $event.stopPropagation()"
+                        class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                  Ver incendio
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin notificaciones -->
+      <div *ngIf="notificaciones.length === 0" class="text-center py-12">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay notificaciones</h3>
+        <p class="text-gray-500">No se encontraron notificaciones con los filtros seleccionados.</p>
+        <button (click)="limpiarFiltros()"
+                class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100">
+          Ver todas las notificaciones
+        </button>
+      </div>
+
+      <!-- Paginación -->
+      <div *ngIf="totalPaginas > 1" class="px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Mostrando {{ (paginaActual * tamanoPagina) + 1 }} a {{ Math.min((paginaActual + 1) * tamanoPagina, totalElementos) }} de {{ totalElementos }} resultados
+          </div>
+          <div class="flex gap-2">
+            <button (click)="paginaAnterior()" [disabled]="paginaActual === 0"
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Anterior
+            </button>
+
+            <button *ngFor="let pagina of [].constructor(Math.min(totalPaginas, 5)); let i = index"
+(click)="irAPagina(i)"
+                    [class]="i === paginaActual
+                      ? 'px-3 py-2 text-sm font-medium text-white bg-orange-600 border border-orange-600 rounded-md'
+                      : 'px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50'">
+              {{ i + 1 }}
+            </button>
+
+            <button (click)="paginaSiguiente()" [disabled]="paginaActual >= totalPaginas - 1"
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

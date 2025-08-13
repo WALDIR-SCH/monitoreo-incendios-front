@@ -1,0 +1,12 @@
+.gradient-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse, #00a917b2 0, #00ff2600 630px);
+  background-size: 1200px 500px;
+  background-position: center -250px;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
